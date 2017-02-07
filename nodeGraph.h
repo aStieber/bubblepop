@@ -8,19 +8,22 @@ class game;
 class nodeGraph;
 
 
-
-
 class nodeGraph {
 public:
 	nodeGraph();
 	nodeGraph(int _BOARD_WIDTH, int _BOARD_HEIGHT);
-	std::vector<node> Graph;
-	std::vector<std::vector<int>> adjacencyMasterList;
+	std::vector<node> mGraph;
+	std::vector<std::vector<int>> mAdjacencyMasterList;
 
 	void populateInitialGraph(int _BOARD_WIDTH, int _BOARD_HEIGHT);
 	void updateNodeAdjacencies();
 	void populateAdjacencyMasterList(int _BOARD_WIDTH, int _BOARD_HEIGHT);
 
+	void addNode(int _Pos);
+	void runPhysicsStep(int _triggerPos);
+	void checkColorMatch(int _triggerPos, std::vector<bool>& _visitedVec, std::vector<node*>& _matchingNodeSet);
+
+	int mBOARD_HEIGHT, mBOARD_WIDTH;
 private:
 };
 
@@ -31,33 +34,15 @@ public:
 	node();
 	node(int _pos, std::vector<int>* _adjacencyList, bool _isDisabled);
 
-	bool isDisabled =true;
-	int color;
-	int pos = -1;
+
+
+	bool mIsDisabled =true;
+	int mColor;
+	int mPos = -1;
 	
 	
-	std::vector<int>* adjacencyList;
-	std::vector<node*> nodeAdjacencyList;
+	std::vector<int>* mAdjacencyList;
+	std::vector<node*> mNodeAdjacencyList;
 
 	void updateAdjacencies(std::vector<node>& _graph);
-	
-private:
-
-};
-
-class game {
-public:
-	game();
-
-	const int BOARD_WIDTH = 16;
-	const int BOARD_HEIGHT = 12;
-
-	nodeGraph nG;
-
-private:
-
-
-
-
-
 };

@@ -2,30 +2,34 @@
 //
 #include <SFML/Graphics.hpp>
 #include <vector>
-#include "game.h"
+#include "nodeGraph.h"
+#include "graphics.h"
 
 
+class game{
+public:
+	game();
+	const int BOARD_WIDTH = 16;
+	const int BOARD_HEIGHT = 12;
+	nodeGraph mNodeGraph;
+};
+
+game::game() {
+	nodeGraph mNodeGraph(BOARD_WIDTH, BOARD_HEIGHT);
+	mNodeGraph.populateAdjacencyMasterList(BOARD_WIDTH, BOARD_HEIGHT);
+	mNodeGraph.populateInitialGraph(BOARD_WIDTH, BOARD_HEIGHT);
+}
 
 int main()
 {
-	sf::RenderWindow window(sf::VideoMode(200, 200), "SFML works!");
+	game theGame;
+	graphics g(&theGame);
+	g.runGraphicsLoop();
 
-	game g;
-
-	while (window.isOpen()) {
-		sf::Event event;
-		while (window.pollEvent(event)) {
-			if (event.type == sf::Event::Closed)
-				window.close();
-		}
-	}
 	return 0;
 }
 
 /*
-
-
-
 window.clear();
 window.draw(shape);
 window.display();
