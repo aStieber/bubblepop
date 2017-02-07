@@ -3,23 +3,11 @@
 #include <SFML\Graphics.hpp>
 
 
-
-class game {
-public:
-	game();
-
-	const int BOARD_WIDTH = 16;
-	const int BOARD_HEIGHT = 12;
-	
-	nodeGraph nG;
-
-private:
-	
-	
+class node;
+class game;
+class nodeGraph;
 
 
-
-};
 
 
 class nodeGraph {
@@ -40,6 +28,7 @@ private:
 
 class node {
 public:
+	node();
 	node(int _pos, std::vector<int>* _adjacencyList, bool _isDisabled);
 
 	bool isDisabled =true;
@@ -48,10 +37,27 @@ public:
 	
 	
 	std::vector<int>* adjacencyList;
-	std::vector<node> nodeAdjacencyList;
+	std::vector<node*> nodeAdjacencyList;
 
 	void updateAdjacencies(std::vector<node>& _graph);
 	
 private:
+
+};
+
+class game {
+public:
+	game();
+
+	const int BOARD_WIDTH = 16;
+	const int BOARD_HEIGHT = 12;
+
+	nodeGraph nG;
+
+private:
+
+
+
+
 
 };

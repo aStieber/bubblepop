@@ -2,7 +2,7 @@
 //
 #include <SFML/Graphics.hpp>
 #include <vector>
-#include "graph.h"
+#include "game.h"
 
 
 
@@ -10,7 +10,7 @@ int main()
 {
 	sf::RenderWindow window(sf::VideoMode(200, 200), "SFML works!");
 
-	graph g;
+	game g;
 
 	while (window.isOpen()) {
 		sf::Event event;

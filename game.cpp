@@ -1,14 +1,15 @@
-#include "graph.h"
+#include "game.h"
 #include <iostream>
 
 game::game() {
+	nodeGraph nG(BOARD_WIDTH, BOARD_HEIGHT);
 	nG.populateAdjacencyMasterList(BOARD_WIDTH, BOARD_HEIGHT);
 	nG.populateInitialGraph(BOARD_WIDTH, BOARD_HEIGHT);
 }
 
 void nodeGraph::populateAdjacencyMasterList(int _BOARD_WIDTH, int _BOARD_HEIGHT) {
 	adjacencyMasterList.clear();
-	for (size_t i = 0; i < (_BOARD_HEIGHT * _BOARD_WIDTH); i++) {
+	for (int i = 0; i < (_BOARD_HEIGHT * _BOARD_WIDTH); i++) {
 		std::vector<int> tmpAdjacencyList;
 		bool isEvenRow = ((int)(i / _BOARD_WIDTH) % 2 == 0);
 		int leftMod = isEvenRow ? -1 : 0;
@@ -31,12 +32,17 @@ void nodeGraph::populateAdjacencyMasterList(int _BOARD_WIDTH, int _BOARD_HEIGHT)
 	}
 }
 
+nodeGraph::nodeGraph() {
+
+}
+
 nodeGraph::nodeGraph(int _BOARD_WIDTH, int _BOARD_HEIGHT) {
 	std::vector<int> Graph(_BOARD_HEIGHT * _BOARD_WIDTH, NULL);
 }
 
 void nodeGraph::populateInitialGraph(int _BOARD_WIDTH, int _BOARD_HEIGHT) { //add randomness
-	for (size_t i = 0; i < (_BOARD_WIDTH * 3); i++) {
+	Graph.resize(adjacencyMasterList.size());
+	for (int i = 0; i < (_BOARD_WIDTH * 3); i++) {
 		Graph[i] = node(i, &adjacencyMasterList[i], false);
 	}
 	updateNodeAdjacencies();
@@ -46,6 +52,8 @@ void nodeGraph::updateNodeAdjacencies() {
 	for (node n : Graph) { n.updateAdjacencies(Graph); }
 }
 
+node::node() {}
+
 node::node(int _pos, std::vector<int>* _adjacencyList, bool _isDisabled) {
 	pos = _pos;
 	adjacencyList = _adjacencyList;
@@ -53,10 +61,13 @@ node::node(int _pos, std::vector<int>* _adjacencyList, bool _isDisabled) {
 }
 
 void node::updateAdjacencies(std::vector<node>& _graph) {
-	nodeAdjacencyList.clear();
-	for (int i : *adjacencyList) {
+	if (isDisabled) { return; }
+
+	nodeAdjacencyList.clear();	
+	for (int i = 0; i < adjacencyList->size(); i++) {
 		if (!_graph[i].isDisabled) {
 			nodeAdjacencyList.push_back(&_graph[i]);
 		}
 	}
 }
+
