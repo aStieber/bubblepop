@@ -5,35 +5,35 @@
 
 class graphics {
 public:
-	graphics();
-	graphics(game* _game, sf::RenderWindow* _rW);
+    graphics();
+    graphics(game* _game, sf::RenderWindow* _rW);
 
-	void runGraphicsLoop();
+    void runGraphicsLoop();
 
-	game* mGame;
+    game* mGame;
 
 
 private:
-	const int mMasterWindowWidth = 1000;
-	const int mMasterWindowHeight = 800;
+    const int mMasterWindowWidth = 1000;
+    const int mMasterWindowHeight = 800;
 
-	const int mGameWindowWidth = 800;
-	const int mGameWindowHeight = 600;
+    const int mGameWindowWidth = 800;
+    const int mGameWindowHeight = 600;
 
-	const sf::Time gameInterval = sf::milliseconds(8);
-	const sf::Time windowRefreshInterval = sf::milliseconds(8);
+    const sf::Time gameInterval = sf::milliseconds(8);
+    const sf::Time windowRefreshInterval = sf::milliseconds(8);
 
-	sf::RenderWindow* mMasterWindow;
-	sf::RenderTexture mGameRenderTexture;
-	sf::Vector2f mGameRenderOffsetFromMaster;
+    sf::RenderWindow* mMasterWindow;
+    sf::RenderTexture mStationaryNodeRenderTexture;
+    sf::Vector2f mGameRenderOffsetFromMaster;
 
-	float mRadius;
+    float mRadius;
 
-	std::vector<sf::Keyboard::Key> collectInputsFromDevices();
-	void updateWindow(sf::Time& windowRefreshTimeAcc);
-	void updateGameRenderTexture();
-	sf::Vector2f getStationaryCirclePixelCenter(int _pos);
-	
+    std::vector<sf::Keyboard::Key> collectInputsFromDevices();
+    void updateWindow(sf::Time& windowRefreshTimeAcc);
+    void updateStationaryNodeRenderTexture();
+    sf::Vector2f getStationaryCirclePixelCenter(int _pos);
+    
 };
 
 

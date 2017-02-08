@@ -8,22 +8,22 @@ class nodeGraph;
 
 class nodeGraph {
 public:
-	nodeGraph();
-	nodeGraph(int _BOARD_WIDTH, int _BOARD_HEIGHT);
+    nodeGraph();
+    nodeGraph(int _BOARD_WIDTH, int _BOARD_HEIGHT);
 
-	std::vector<node> mGraph;
-	std::vector<std::vector<int>> mAdjacencyMasterList;
-	int mBOARD_HEIGHT, mBOARD_WIDTH;
+    std::vector<node> mGraph;
+    std::vector<std::vector<int>> mAdjacencyMasterList;
+    int mBOARD_HEIGHT, mBOARD_WIDTH;
 
-	void populateInitialGraph();
-	void updateNodeAdjacencies();
-	void populateAdjacencyMasterList();
+    void populateInitialGraph();
+    void updateNodeAdjacencies();
+    void populateAdjacencyMasterList();
 
-	void addNode(int _Pos);
-	void checkForDestruction(int _triggerPos);
-	void checkColorMatch(int _triggerPos, std::vector<bool>& _visitedVec, std::vector<node*>& _matchingNodeSet);
+    void addNode(int _Pos);
+    void checkForDestruction(int _triggerPos);
+    void checkColorMatch(int _triggerPos, std::vector<bool>& _visitedVec, std::vector<node*>& _matchingNodeSet);
 
-		
+        
 private:
 };
 
@@ -31,18 +31,18 @@ private:
 
 class node {
 public:
-	node();
-	node(int _pos, std::vector<int>* _adjacencyList, bool _isDisabled, sf::Color _color=getRandomColor());
+    node();
+    node(int _pos, std::vector<int>* _adjacencyList, bool _isDisabled, sf::Color _color=getRandomColor());
 
-	bool mIsDisabled =true;
-	sf::Color mColor;
-	int mPos = -1;
-	
-	std::vector<int>* mAdjacencyList;
-	std::vector<node*> mNodeAdjacencyList;
+    bool mIsDisabled =true;
+    sf::Color mColor;
+    int mPos = -1;
+    
+    std::vector<int>* mAdjacencyList;
+    std::vector<node*> mNodeAdjacencyList;
 
-	void updateAdjacencies(std::vector<node>& _graph);
+    void updateAdjacencies(std::vector<node>& _graph);
 private:
-	static std::vector<sf::Color> colorVec; 
-	static sf::Color getRandomColor();
+    static std::vector<sf::Color> colorVec; 
+    static sf::Color getRandomColor();
 };

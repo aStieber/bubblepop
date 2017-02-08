@@ -5,89 +5,98 @@
 graphics::graphics() {}
 
 graphics::graphics(game* _game, sf::RenderWindow* _rW) {
-	mMasterWindow = _rW;
-	mMasterWindow->create(sf::VideoMode(mMasterWindowWidth, mMasterWindowHeight), "make the bubbles gone", sf::Style::Close);
-	mGame = _game;
-	mGameRenderTexture.create(mGameWindowWidth, mGameWindowHeight);
-	mRadius = mGameWindowWidth / ((mGame->mNodeGraph.mBOARD_WIDTH * 2) + 1);
-	mGameRenderOffsetFromMaster = sf::Vector2f((mMasterWindowWidth - mGameWindowWidth) / 2, (mMasterWindowHeight - mGameWindowHeight) / 2);
+    mMasterWindow = _rW;
+    mMasterWindow->create(sf::VideoMode(mMasterWindowWidth, mMasterWindowHeight), "make the bubbles gone", sf::Style::Close);
+    mGame = _game;
+    mStationaryNodeRenderTexture.create(mGameWindowWidth, mGameWindowHeight);
+    mRadius = mGameWindowWidth / ((mGame->mNodeGraph.mBOARD_WIDTH * 2) + 1);
+    mGameRenderOffsetFromMaster = sf::Vector2f((mMasterWindowWidth - mGameWindowWidth) / 2, (mMasterWindowHeight - mGameWindowHeight) / 2);
+
+    mGame->mShooter.setLocation(sf::Vector2f(mGameRenderOffsetFromMaster.x + (mGameWindowWidth / 2), mGameRenderOffsetFromMaster.y + (mGameWindowHeight)));
 
 }
 
 void graphics::runGraphicsLoop() {
-	sf::Clock clock;
-	sf::Time gameTimeAcc;
-	sf::Time windowRefreshTimeAcc;
+    sf::Clock clock;
+    sf::Time gameTimeAcc;
+    sf::Time windowRefreshTimeAcc;
 
-	while (true) {
-		sf::Time t = clock.restart();
-		gameTimeAcc += t;
-		windowRefreshTimeAcc += t;
-		while (gameTimeAcc >= gameInterval) {
-			std::vector<sf::Keyboard::Key> keys = collectInputsFromDevices();
+    while (true) {
+        sf::Time t = clock.restart();
+        gameTimeAcc += t;
+        windowRefreshTimeAcc += t;
+        while (gameTimeAcc >= gameInterval) {
+            std::vector<sf::Keyboard::Key> keys = collectInputsFromDevices();
 
-			mGame->runPhysicsFrame(keys);
-			gameTimeAcc -= gameInterval;
-		}
+            mGame->runPhysicsFrame(keys);
+            gameTimeAcc -= gameInterval;
+        }
 
-		if (windowRefreshTimeAcc >= windowRefreshInterval) { updateWindow(windowRefreshTimeAcc); }
-	}
+        if (windowRefreshTimeAcc >= windowRefreshInterval) { updateWindow(windowRefreshTimeAcc); }
+    }
 
 }
 
 
 std::vector<sf::Keyboard::Key> graphics::collectInputsFromDevices() {
-	std::vector<sf::Keyboard::Key> keySet;
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) { keySet.emplace_back(sf::Keyboard::Left); }
-	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right)) { keySet.emplace_back(sf::Keyboard::Right); }
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::R)) { keySet.emplace_back(sf::Keyboard::R); }
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) { keySet.emplace_back(sf::Keyboard::Space); }
+    std::vector<sf::Keyboard::Key> keySet;
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) { keySet.emplace_back(sf::Keyboard::Left); }
+    else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right)) { keySet.emplace_back(sf::Keyboard::Right); }
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::R)) { keySet.emplace_back(sf::Keyboard::R); }
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) { keySet.emplace_back(sf::Keyboard::Space); }
 
-	sf::Event event;
-	while (mMasterWindow->pollEvent(event)) {
-		if (event.type == sf::Event::Closed) { mMasterWindow->close(); exit(0); }
-	}
+    sf::Event event;
+    while (mMasterWindow->pollEvent(event)) {
+        if (event.type == sf::Event::Closed) { mMasterWindow->close(); exit(0); }
+    }
 
-	return(keySet);
+    return(keySet);
 }
 
 void graphics::updateWindow(sf::Time& windowRefreshTimeAcc) {
-	mMasterWindow->clear(sf::Color(20, 20, 20));
+    mMasterWindow->clear(sf::Color(20, 20, 20));
 
-	updateGameRenderTexture();
-	sf::Sprite gameTextureSprite(mGameRenderTexture.getTexture());
-	gameTextureSprite.setPosition(mGameRenderOffsetFromMaster);
-	mMasterWindow->draw(gameTextureSprite);	
+    updateStationaryNodeRenderTexture();
+    sf::Sprite gameTextureSprite(mStationaryNodeRenderTexture.getTexture());
+    gameTextureSprite.setPosition(mGameRenderOffsetFromMaster);
+    mMasterWindow->draw(gameTextureSprite);	
 
-	mMasterWindow->display();
-	windowRefreshTimeAcc -= windowRefreshInterval;
+    mMasterWindow->draw(mGame->mShooter.getArrowSprite());
+
+    mMasterWindow->display();
+    windowRefreshTimeAcc -= windowRefreshInterval;
 }
 
-void graphics::updateGameRenderTexture() {
-	mGameRenderTexture.clear(sf::Color::Black);
-	sf::CircleShape circle;
-	circle.setRadius(mRadius);
-	circle.setOutlineThickness(mRadius / -8);
-	circle.setOutlineColor(sf::Color(140, 140, 140));
+void graphics::updateStationaryNodeRenderTexture() {
+	mStationaryNodeRenderTexture.clear(sf::Color(160, 200, 220));
+	//nodeGraph
+    sf::CircleShape circle;
+    circle.setRadius(mRadius);
+    circle.setOutlineThickness(mRadius / -8);
+    circle.setOutlineColor(sf::Color(140, 140, 140));
 
-	sf::Vector2f center(mRadius, mRadius);
-	circle.setOrigin(center);
+    sf::Vector2f center(mRadius, mRadius);
+    circle.setOrigin(center);
+    for (node& currentNode : mGame->mNodeGraph.mGraph) {
+        if (!currentNode.mIsDisabled) {
+            circle.setFillColor(currentNode.mColor);
+            circle.setPosition(getStationaryCirclePixelCenter(currentNode.mPos));
+            mStationaryNodeRenderTexture.draw(circle);
+        }
+    }
+	//end nodeGraph
 
-	for (node& currentNode : mGame->mNodeGraph.mGraph) {
-		if (!currentNode.mIsDisabled) {
-			circle.setFillColor(currentNode.mColor);
-			circle.setPosition(getStationaryCirclePixelCenter(currentNode.mPos));
-			mGameRenderTexture.draw(circle);
-		}
-	}
-	mGameRenderTexture.display();
+
+
+
+    mStationaryNodeRenderTexture.display();
 }
 
 sf::Vector2f graphics::getStationaryCirclePixelCenter(int _pos) {
-	bool isEvenRow = ((int)(_pos / mGame->mBOARD_WIDTH) % 2 == 0);
-	float horizontalOffset = (isEvenRow ? mRadius : 2 * mRadius) + ((float)(_pos % mGame->mBOARD_WIDTH) * mRadius * 2);
-	float verticalOffset = mRadius + (sqrt(3) * mRadius * (int)(_pos / mGame->mBOARD_WIDTH)); 
-	sf::Vector2f tmp = sf::Vector2f(horizontalOffset, verticalOffset);
-	return(tmp);
+    bool isEvenRow = ((_pos / mGame->mBOARD_WIDTH) % 2 == 0);
+    float horizontalOffset = (isEvenRow ? mRadius : 2 * mRadius) + (float)((_pos % mGame->mBOARD_WIDTH) * mRadius * 2);
+    float verticalOffset = mRadius + (sqrtf(3) * mRadius * (_pos / mGame->mBOARD_WIDTH)); 
+    sf::Vector2f tmp = sf::Vector2f(horizontalOffset, verticalOffset);
+    return(tmp);
 }
 

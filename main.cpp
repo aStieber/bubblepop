@@ -9,13 +9,13 @@
 
 int main()
 {
-	srand(time(NULL));
-	sf::RenderWindow window;
-	game theGame;
+    srand(time(NULL));
+    sf::RenderWindow window;
+    game theGame;
 
-	graphics g(&theGame, &window);
-	g.runGraphicsLoop();
-	return 0;
+    graphics g(&theGame, &window);
+    g.runGraphicsLoop();
+    return 0;
 }
 
 /*
