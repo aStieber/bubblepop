@@ -25,11 +25,14 @@ private:
 
 	sf::RenderWindow* mMasterWindow;
 	sf::RenderTexture mGameRenderTexture;
+	sf::Vector2f mGameRenderOffsetFromMaster;
+
+	float mRadius;
 
 	std::vector<sf::Keyboard::Key> collectInputsFromDevices();
 	void updateWindow(sf::Time& windowRefreshTimeAcc);
 	void updateGameRenderTexture();
-	sf::Vector2f drawStationaryCirclePixelCenter(int _pos, float _radius);
+	sf::Vector2f getStationaryCirclePixelCenter(int _pos);
 	
 };
 

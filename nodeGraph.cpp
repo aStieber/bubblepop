@@ -57,10 +57,9 @@ void nodeGraph::updateNodeAdjacencies() {
 void nodeGraph::addNode(int _pos) {
 	mGraph[_pos] = node(_pos, &mAdjacencyMasterList[_pos], false);
 	updateNodeAdjacencies();
-	runPhysicsStep(_pos);
 }
 
-void nodeGraph::runPhysicsStep(int _triggerPos) {
+void nodeGraph::checkForDestruction(int _triggerPos) {
 	std::vector<node*> matchingNodeSet;
 	std::vector<bool> visitedVec(mBOARD_HEIGHT * mBOARD_WIDTH, false);
 	checkColorMatch(_triggerPos, visitedVec, matchingNodeSet);
@@ -102,7 +101,7 @@ void node::updateAdjacencies(std::vector<node>& _graph) {
 	}
 }
 
-std::vector<sf::Color> node::colorVec = {	sf::Color::White, sf::Color(140, 140, 140) , sf::Color::Yellow,
+std::vector<sf::Color> node::colorVec = {	sf::Color::White, sf::Color::Magenta, sf::Color::Yellow,
 											sf::Color::Red, sf::Color::Blue, sf::Color::Green };
 
 sf::Color node::getRandomColor() {

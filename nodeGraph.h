@@ -20,7 +20,7 @@ public:
 	void populateAdjacencyMasterList();
 
 	void addNode(int _Pos);
-	void runPhysicsStep(int _triggerPos);
+	void checkForDestruction(int _triggerPos);
 	void checkColorMatch(int _triggerPos, std::vector<bool>& _visitedVec, std::vector<node*>& _matchingNodeSet);
 
 		
