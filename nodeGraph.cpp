@@ -86,6 +86,7 @@ node::node() {
 }
 
 
+
 node::node(int _pos, std::vector<int>* _adjacencyList, bool _isDisabled, sf::Color _color) {
     mPos = _pos;
     mAdjacencyList = _adjacencyList;

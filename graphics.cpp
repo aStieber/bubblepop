@@ -9,10 +9,9 @@ graphics::graphics(game* _game, sf::RenderWindow* _rW) {
     mMasterWindow->create(sf::VideoMode(mMasterWindowWidth, mMasterWindowHeight), "make the bubbles gone", sf::Style::Close);
     mGame = _game;
     mStationaryNodeRenderTexture.create(mGameWindowWidth, mGameWindowHeight);
+    mShooterRenderTexture.create(mMasterWindowWidth, mMasterWindowHeight);
     mRadius = mGameWindowWidth / ((mGame->mNodeGraph.mBOARD_WIDTH * 2) + 1);
     mGameRenderOffsetFromMaster = sf::Vector2f((mMasterWindowWidth - mGameWindowWidth) / 2, (mMasterWindowHeight - mGameWindowHeight) / 2);
-
-    mGame->mShooter.setLocation(sf::Vector2f(mGameRenderOffsetFromMaster.x + (mGameWindowWidth / 2), mGameRenderOffsetFromMaster.y + (mGameWindowHeight)));
 
 }
 
@@ -61,22 +60,50 @@ void graphics::updateWindow(sf::Time& windowRefreshTimeAcc) {
     gameTextureSprite.setPosition(mGameRenderOffsetFromMaster);
     mMasterWindow->draw(gameTextureSprite);	
 
-    mMasterWindow->draw(mGame->mShooter.getArrowSprite());
+    updateShooterRenderTexture();
+    sf::Sprite shooterTextureSprite(mShooterRenderTexture.getTexture());
+    mMasterWindow->draw(shooterTextureSprite);
+
+    
 
     mMasterWindow->display();
     windowRefreshTimeAcc -= windowRefreshInterval;
 }
 
-void graphics::updateStationaryNodeRenderTexture() {
-	mStationaryNodeRenderTexture.clear(sf::Color(160, 200, 220));
-	//nodeGraph
+sf::CircleShape graphics::getBall() {
     sf::CircleShape circle;
     circle.setRadius(mRadius);
     circle.setOutlineThickness(mRadius / -8);
     circle.setOutlineColor(sf::Color(140, 140, 140));
-
     sf::Vector2f center(mRadius, mRadius);
     circle.setOrigin(center);
+
+    return(circle);
+}
+
+void graphics::updateShooterRenderTexture() {
+    mShooterRenderTexture.clear(sf::Color::Transparent);
+
+    mShooterRenderTexture.draw((mGame->mShooter.getArrowSprite());
+
+    sf::CircleShape circle = getBall();
+    circle.setFillColor(mGame->mShooter.mLoadedBullet.mColor);
+    circle.setPosition(mGame->mShooter.getLoadedBulletPosition());
+    mShooterRenderTexture.draw(circle);
+
+    for (bullet& b : mGame->mActiveBullets) {
+        circle.setFillColor(b.mColor);
+        circle.setPosition(b.mPos);
+        mShooterRenderTexture.draw(circle);
+    }
+
+
+    mShooterRenderTexture.display();
+}
+
+void graphics::updateStationaryNodeRenderTexture() {
+	mStationaryNodeRenderTexture.clear(sf::Color(160, 200, 220));
+    sf::CircleShape circle = getBall();
     for (node& currentNode : mGame->mNodeGraph.mGraph) {
         if (!currentNode.mIsDisabled) {
             circle.setFillColor(currentNode.mColor);
@@ -84,11 +111,6 @@ void graphics::updateStationaryNodeRenderTexture() {
             mStationaryNodeRenderTexture.draw(circle);
         }
     }
-	//end nodeGraph
-
-
-
-
     mStationaryNodeRenderTexture.display();
 }
 
@@ -98,5 +120,9 @@ sf::Vector2f graphics::getStationaryCirclePixelCenter(int _pos) {
     float verticalOffset = mRadius + (sqrtf(3) * mRadius * (_pos / mGame->mBOARD_WIDTH)); 
     sf::Vector2f tmp = sf::Vector2f(horizontalOffset, verticalOffset);
     return(tmp);
+}
+
+sf::Vector2i graphics::meterToPixels(sf::Vector2f) {
+
 }
 

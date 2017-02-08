@@ -31,10 +31,10 @@ private:
 
 class node {
 public:
-    node();
+    node(); //triggerBall form
     node(int _pos, std::vector<int>* _adjacencyList, bool _isDisabled, sf::Color _color=getRandomColor());
 
-    bool mIsDisabled =true;
+    bool mIsDisabled = true;
     sf::Color mColor;
     int mPos = -1;
     
