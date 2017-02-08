@@ -3,11 +3,11 @@
 
 
 
-void nodeGraph::populateAdjacencyMasterList(int _BOARD_WIDTH, int _BOARD_HEIGHT) {
+void nodeGraph::populateAdjacencyMasterList() {
 	mAdjacencyMasterList.clear();
-	for (int i = 0; i < (_BOARD_HEIGHT * _BOARD_WIDTH); i++) {
+	for (int i = 0; i < (mBOARD_HEIGHT * mBOARD_WIDTH); i++) {
 		std::vector<int> tmpAdjacencyList;
-		bool isEvenRow = ((int)(i / _BOARD_WIDTH) % 2 == 0);
+		bool isEvenRow = ((int)(i / mBOARD_WIDTH) % 2 == 0);
 		int leftMod = isEvenRow ? -1 : 0;
 		int rightMod = isEvenRow ? 0 : 1;
 		bool leftAllowed = ((i % 16) != 0);
@@ -15,18 +15,19 @@ void nodeGraph::populateAdjacencyMasterList(int _BOARD_WIDTH, int _BOARD_HEIGHT)
 
 		if (leftAllowed) { tmpAdjacencyList.push_back(i - 1); } //left
 		if (rightAllowed) { tmpAdjacencyList.push_back(i + 1); }//right
-		if (i >= _BOARD_WIDTH) { //not top row
-			if (leftAllowed) { tmpAdjacencyList.push_back(i - _BOARD_WIDTH + leftMod); } //upper left
-			if (rightAllowed) { tmpAdjacencyList.push_back(i - _BOARD_WIDTH + rightMod); } //upper right			
+		if (i >= mBOARD_WIDTH) { //not top row
+			if (leftAllowed) { tmpAdjacencyList.push_back(i - mBOARD_WIDTH + leftMod); } //upper left
+			if (rightAllowed) { tmpAdjacencyList.push_back(i - mBOARD_WIDTH + rightMod); } //upper right			
 		}
-		if (i < ((_BOARD_HEIGHT - 1) * _BOARD_WIDTH)) { //not bottom row
-			if (leftAllowed) { tmpAdjacencyList.push_back(i + _BOARD_WIDTH + leftMod); }
-			if (rightAllowed) { tmpAdjacencyList.push_back(i + _BOARD_WIDTH + rightMod); }
+		if (i < ((mBOARD_HEIGHT - 1) * mBOARD_WIDTH)) { //not bottom row
+			if (leftAllowed) { tmpAdjacencyList.push_back(i + mBOARD_WIDTH + leftMod); }
+			if (rightAllowed) { tmpAdjacencyList.push_back(i + mBOARD_WIDTH + rightMod); }
 		}
 
 		mAdjacencyMasterList.emplace_back(std::move(tmpAdjacencyList));
 	}
 }
+
 
 nodeGraph::nodeGraph() {
 
@@ -36,11 +37,14 @@ nodeGraph::nodeGraph(int _BOARD_WIDTH, int _BOARD_HEIGHT) {
 	mBOARD_HEIGHT = _BOARD_HEIGHT;
 	mBOARD_WIDTH = _BOARD_WIDTH;
 	std::vector<int> mGraph(_BOARD_HEIGHT * _BOARD_WIDTH, NULL);
+	populateAdjacencyMasterList();
+	populateInitialGraph();
+	
 }
 
-void nodeGraph::populateInitialGraph(int _BOARD_WIDTH, int _BOARD_HEIGHT) { //add randomness
+void nodeGraph::populateInitialGraph() { //add randomness
 	mGraph.resize(mAdjacencyMasterList.size());
-	for (int i = 0; i < (_BOARD_WIDTH * 3); i++) {
+	for (int i = 0; i < (mBOARD_WIDTH * 3); i++) {
 		mGraph[i] = node(i, &mAdjacencyMasterList[i], false);
 	}
 	updateNodeAdjacencies();
@@ -80,10 +84,11 @@ void nodeGraph::checkColorMatch(int _triggerPos, std::vector<bool>& _visitedVec,
 
 node::node() {}
 
-node::node(int _pos, std::vector<int>* _adjacencyList, bool _isDisabled) {
+node::node(int _pos, std::vector<int>* _adjacencyList, bool _isDisabled, sf::Color _color) {
 	mPos = _pos;
 	mAdjacencyList = _adjacencyList;
 	mIsDisabled = _isDisabled;
+	mColor = _color;
 }
 
 void node::updateAdjacencies(std::vector<node>& _graph) {
@@ -95,5 +100,12 @@ void node::updateAdjacencies(std::vector<node>& _graph) {
 			mNodeAdjacencyList.push_back(&_graph[i]);
 		}
 	}
+}
+
+std::vector<sf::Color> node::colorVec = {	sf::Color::White, sf::Color(140, 140, 140) , sf::Color::Yellow,
+											sf::Color::Red, sf::Color::Blue, sf::Color::Green };
+
+sf::Color node::getRandomColor() {
+	return(colorVec[rand() % colorVec.size()]);
 }
 

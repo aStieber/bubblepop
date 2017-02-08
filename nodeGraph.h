@@ -4,26 +4,26 @@
 
 
 class node;
-class game;
 class nodeGraph;
-
 
 class nodeGraph {
 public:
 	nodeGraph();
 	nodeGraph(int _BOARD_WIDTH, int _BOARD_HEIGHT);
+
 	std::vector<node> mGraph;
 	std::vector<std::vector<int>> mAdjacencyMasterList;
+	int mBOARD_HEIGHT, mBOARD_WIDTH;
 
-	void populateInitialGraph(int _BOARD_WIDTH, int _BOARD_HEIGHT);
+	void populateInitialGraph();
 	void updateNodeAdjacencies();
-	void populateAdjacencyMasterList(int _BOARD_WIDTH, int _BOARD_HEIGHT);
+	void populateAdjacencyMasterList();
 
 	void addNode(int _Pos);
 	void runPhysicsStep(int _triggerPos);
 	void checkColorMatch(int _triggerPos, std::vector<bool>& _visitedVec, std::vector<node*>& _matchingNodeSet);
 
-	int mBOARD_HEIGHT, mBOARD_WIDTH;
+		
 private:
 };
 
@@ -32,17 +32,17 @@ private:
 class node {
 public:
 	node();
-	node(int _pos, std::vector<int>* _adjacencyList, bool _isDisabled);
-
-
+	node(int _pos, std::vector<int>* _adjacencyList, bool _isDisabled, sf::Color _color=getRandomColor());
 
 	bool mIsDisabled =true;
-	int mColor;
+	sf::Color mColor;
 	int mPos = -1;
-	
 	
 	std::vector<int>* mAdjacencyList;
 	std::vector<node*> mNodeAdjacencyList;
 
 	void updateAdjacencies(std::vector<node>& _graph);
+private:
+	static std::vector<sf::Color> colorVec; 
+	static sf::Color getRandomColor();
 };
