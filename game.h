@@ -30,10 +30,10 @@ public:
     bullet mUpcomingBullet;
 
 private:
-    float mCurrentAngle = 0;
-    float mAimSpeed = .5;
-    float mAngleLimit = 70;
-    float mBulletSpeed = .18;
+    float mCurrentAngle = 0.0f;
+    float mAimSpeed = .5f;
+    float mAngleLimit = 70.0f;
+    float mBulletSpeed = .18f;
 
     sf::Vector2f mOrigin;
 
@@ -64,13 +64,17 @@ public:
 
     std::vector<bullet> mActiveBullets;
     void runPhysicsFrame(std::vector<sf::Keyboard::Key>& _keys);
+    std::vector<int> getDestroyedNodes();
+    void clearDestroyedNodes();
     
 private:
+    std::vector<int> mDestroyedNodes;
     std::vector<node*> mFaceNodes;
     void updateFaceNodes();
     void updateBulletGraphInteraction();
     const sf::Vector2f mBoardMeterSize = sf::Vector2f(mBOARD_WIDTH + .5, mBOARD_HEIGHT);
     float getDistanceBetweenPoints(sf::Vector2f _a, sf::Vector2f _b);
     void translateBulletToClosestNode(bullet& b, node& n);
+    void updateDestroyedNodes();
 };
 

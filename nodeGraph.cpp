@@ -44,7 +44,7 @@ nodeGraph::nodeGraph(int _BOARD_WIDTH, int _BOARD_HEIGHT) {
 
 void nodeGraph::populateInitialGraph() { //add randomness
     mGraph.resize(mAdjacencyMasterList.size());
-    int numberOfRowsToGenerate = 3;
+    int numberOfRowsToGenerate = 4;
     for (int i = 0; i < mGraph.size() ; i++) {
         mGraph[i] = node(i, &mAdjacencyMasterList[i], (i >= (mBOARD_WIDTH * numberOfRowsToGenerate)));
     }
@@ -70,24 +70,27 @@ void nodeGraph::addNode(int _Index) {
     updateNodeAdjacencies();
 }
 
-void nodeGraph::checkForDestruction(int _triggerPos) {
-    std::vector<node*> matchingNodeSet;
+std::vector<int> nodeGraph::checkForDestruction(int _triggerPos) {
+    std::vector<int> matchingNodeIndexes;
+
     std::vector<bool> visitedVec(mBOARD_HEIGHT * mBOARD_WIDTH, false);
-    checkColorMatch(_triggerPos, visitedVec, matchingNodeSet);
-    if (matchingNodeSet.size() >= 3) {
-        //destroy em
+    checkColorMatch(_triggerPos, visitedVec, matchingNodeIndexes);
+    if (matchingNodeIndexes.size() >= 3) {
+        return(matchingNodeIndexes);
     }
+
+    return(std::vector<int>());
 
     //for each node adjacent to a destroyed node, verify it is anchored
     
 }
 
-void nodeGraph::checkColorMatch(int _triggerPos, std::vector<bool>& _visitedVec, std::vector<node*>& _matchingNodeSet) {
-    _visitedVec[_triggerPos] = true;
-    _matchingNodeSet.emplace_back(&mGraph[_triggerPos]);
-    for (node* n : mGraph[_triggerPos].mNodeAdjacencyList) {
-        if (n->mColor == mGraph[_triggerPos].mColor && !_visitedVec[n->mIndex]) {
-            checkColorMatch(n->mIndex, _visitedVec, _matchingNodeSet);
+void nodeGraph::checkColorMatch(int _triggerIndex, std::vector<bool>& _visitedVec, std::vector<int>& _matchingNodeIndexes) {
+    _visitedVec[_triggerIndex] = true;
+    _matchingNodeIndexes.emplace_back(_triggerIndex);
+    for (node* n : mGraph[_triggerIndex].mNodeAdjacencyList) {
+        if (n->mColor == mGraph[_triggerIndex].mColor && !_visitedVec[n->mIndex]) {
+            checkColorMatch(n->mIndex, _visitedVec, _matchingNodeIndexes);
         }
     }
 }
@@ -111,9 +114,9 @@ void node::updateAdjacencies(std::vector<node>& _graph) {
     if (mIsDisabled) { return; }
 
     mNodeAdjacencyList.clear();	
-    for (int i = 0; i < mAdjacencyList->size(); i++) {
-        if (!_graph[mAdjacencyList->at(i)].mIsDisabled) {
-            mNodeAdjacencyList.push_back(&_graph[mAdjacencyList->at(i)]);
+    for (int i : *mAdjacencyList) {
+        if (!_graph[i].mIsDisabled) {
+            mNodeAdjacencyList.emplace_back(&_graph[i]);
         }
     }
 }

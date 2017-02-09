@@ -10,7 +10,7 @@ graphics::graphics(game* _game, sf::RenderWindow* _rW) {
     mGame = _game;
     mStationaryNodeRenderTexture.create(mGameWindowWidth, mGameWindowHeight);
     mShooterRenderTexture.create(mGameWindowWidth, mMasterWindowHeight);
-    mRadius = mGameWindowWidth / ((mGame->mNodeGraph.mBOARD_WIDTH * 2) + 1);
+    mRadius = (float)mGameWindowWidth / (float)((mGame->mNodeGraph.mBOARD_WIDTH * 2) + 1);
     mGameRenderOffsetFromMaster = sf::Vector2f((mMasterWindowWidth - mGameWindowWidth) / 2, (mMasterWindowHeight - mGameWindowHeight) / 2);
 }
 
@@ -27,11 +27,45 @@ void graphics::runGraphicsLoop() {
             std::vector<sf::Keyboard::Key> keys = collectInputsFromDevices();
 
             mGame->runPhysicsFrame(keys);
+            
+            
+            
             gameTimeAcc -= gameInterval;
         }
 
         if (windowRefreshTimeAcc >= windowRefreshInterval) { updateWindow(windowRefreshTimeAcc); }
     }
+
+}
+
+void graphics::updateDestroyedNodes() {
+    std::vector<destroyedNode> tmpDNs;
+    if (mGame->getDestroyedNodes().size() > 0) {
+        tmpDNs = createDestroyedNodes(mGame->getDestroyedNodes());
+    }
+    else if (mDestroyedNodes.size() > 0) {
+        tmpDNs = mDestroyedNodes;
+    }
+    else { return; }
+    mDestroyedNodes.clear();
+    
+    for (destroyedNode& dN : tmpDNs) {
+        if (dN.mColor.a >= dN.mTransparencyIncreaseRate) {
+            dN.mColor.a -= dN.mTransparencyIncreaseRate;
+            mDestroyedNodes.emplace_back(dN);
+        }
+    }
+}
+
+std::vector<destroyedNode> graphics::createDestroyedNodes(std::vector<int> _nodeIndexes) {
+    std::vector<destroyedNode> tmp(_nodeIndexes.size());
+    for (int i = 0; i < _nodeIndexes.size(); i++) {
+        node* n = &mGame->mNodeGraph.mGraph[i];
+        tmp[i].mColor = n->mColor;
+        tmp[i].mMeterPos = n->mMeterPos;
+    }
+    mGame->clearDestroyedNodes();
+    return(tmp);
 
 }
 
@@ -92,6 +126,14 @@ void graphics::updateShooterRenderTexture() {
     circle.setFillColor(mGame->mShooter.mLoadedBullet.mColor);
     circle.setPosition(meterToGamePixels(mGame->mShooter.getOrigin()));
     mShooterRenderTexture.draw(circle);
+
+    updateDestroyedNodes();
+    for (destroyedNode& dN : mDestroyedNodes) {
+        circle.setFillColor(dN.mColor);
+        circle.setPosition(meterToGamePixels(dN.mMeterPos));
+        mShooterRenderTexture.draw(circle);
+    }
+
 
     for (bullet& b : mGame->mActiveBullets) {
         circle.setFillColor(b.mColor);
