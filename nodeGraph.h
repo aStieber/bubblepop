@@ -22,7 +22,7 @@ public:
     void addNode(int _Pos);
     void checkForDestruction(int _triggerPos);
     void checkColorMatch(int _triggerPos, std::vector<bool>& _visitedVec, std::vector<node*>& _matchingNodeSet);
-
+    void updateMeterPositions();
         
 private:
 };
@@ -36,7 +36,8 @@ public:
 
     bool mIsDisabled = true;
     sf::Color mColor;
-    int mPos = -1;
+    int mIndex = -1;
+    sf::Vector2f mMeterPos;
     
     std::vector<int>* mAdjacencyList;
     std::vector<node*> mNodeAdjacencyList;

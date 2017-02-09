@@ -44,18 +44,29 @@ nodeGraph::nodeGraph(int _BOARD_WIDTH, int _BOARD_HEIGHT) {
 
 void nodeGraph::populateInitialGraph() { //add randomness
     mGraph.resize(mAdjacencyMasterList.size());
-    for (int i = 0; i < (mBOARD_WIDTH * 3); i++) {
-        mGraph[i] = node(i, &mAdjacencyMasterList[i], false);
+    int numberOfRowsToGenerate = 3;
+    for (int i = 0; i < mGraph.size() ; i++) {
+        mGraph[i] = node(i, &mAdjacencyMasterList[i], (i >= (mBOARD_WIDTH * numberOfRowsToGenerate)));
     }
     updateNodeAdjacencies();
+    updateMeterPositions();
 }
 
 void nodeGraph::updateNodeAdjacencies() {
     for (node& n : mGraph) { n.updateAdjacencies(mGraph); }
 }
 
-void nodeGraph::addNode(int _pos) {
-    mGraph[_pos] = node(_pos, &mAdjacencyMasterList[_pos], false);
+void nodeGraph::updateMeterPositions() {
+    for (node& n : mGraph) {
+        bool isEvenRow = ((n.mIndex / mBOARD_WIDTH) % 2 == 0);
+        float horizontalOffset = (isEvenRow ? 1 : 2) + (float)((n.mIndex % mBOARD_WIDTH) * 2);
+        float verticalOffset = 1 + (sqrtf(3) * (n.mIndex / mBOARD_WIDTH));
+        n.mMeterPos = sf::Vector2f(horizontalOffset, verticalOffset);
+    }
+}
+
+void nodeGraph::addNode(int _Index) {
+    mGraph[_Index] = node(_Index, &mAdjacencyMasterList[_Index], false);
     updateNodeAdjacencies();
 }
 
@@ -75,11 +86,13 @@ void nodeGraph::checkColorMatch(int _triggerPos, std::vector<bool>& _visitedVec,
     _visitedVec[_triggerPos] = true;
     _matchingNodeSet.emplace_back(&mGraph[_triggerPos]);
     for (node* n : mGraph[_triggerPos].mNodeAdjacencyList) {
-        if (n->mColor == mGraph[_triggerPos].mColor && !_visitedVec[n->mPos]) {
-            checkColorMatch(n->mPos, _visitedVec, _matchingNodeSet);
+        if (n->mColor == mGraph[_triggerPos].mColor && !_visitedVec[n->mIndex]) {
+            checkColorMatch(n->mIndex, _visitedVec, _matchingNodeSet);
         }
     }
 }
+
+
 
 node::node() {
     mColor = getRandomColor();
@@ -88,7 +101,7 @@ node::node() {
 
 
 node::node(int _pos, std::vector<int>* _adjacencyList, bool _isDisabled, sf::Color _color) {
-    mPos = _pos;
+    mIndex = _pos;
     mAdjacencyList = _adjacencyList;
     mIsDisabled = _isDisabled;
     mColor = _color;

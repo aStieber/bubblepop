@@ -36,6 +36,7 @@ private:
     void updateShooterRenderTexture();
     sf::CircleShape getBall();
     sf::Vector2f getStationaryCirclePixelCenter(int _pos);
+    sf::Vector2f meterToGamePixels(sf::Vector2f _meterPos);
     
 };
 

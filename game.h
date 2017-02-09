@@ -9,7 +9,7 @@ public:
     bullet();
 
     sf::Color mColor;
-    sf::Vector2f mPos;
+    sf::Vector2f mMeterPos;
     sf::Vector2f mVector;
 
     bool mWasFired = false;
@@ -21,10 +21,11 @@ class shooter {
 public:
     shooter();
 
-    void setLocation(sf::Vector2f _pos);
+    void setOrigin(sf::Vector2f _pos);
     void update(std::vector<sf::Keyboard::Key>& _keys, std::vector<bullet>& _activeBullets);
     sf::Sprite getArrowSprite();
-    sf::Vector2f getLoadedBulletPosition();
+    sf::Vector2f getOrigin();
+    sf::Vector2f mGameDimensions;
 
     bullet mLoadedBullet;
     bullet mUpcomingBullet;
@@ -33,7 +34,9 @@ private:
     float mCurrentAngle = 0;
     float mAimSpeed = .5;
     float mAngleLimit = 70;
-    float mBulletSpeed = 6;
+    float mBulletSpeed = .16;
+
+    sf::Vector2f mOrigin;
 
     sf::Sprite mArrowSprite;
     sf::Texture mArrowTexture;
@@ -57,6 +60,8 @@ public:
     int mNUM_NODES;
     nodeGraph mNodeGraph;
 	shooter mShooter;
+
+    const sf::Vector2f mBoardMeterSize = sf::Vector2f(mBOARD_WIDTH + .5, mBOARD_HEIGHT);
 
     std::vector<bullet> mActiveBullets;
 

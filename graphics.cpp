@@ -9,10 +9,9 @@ graphics::graphics(game* _game, sf::RenderWindow* _rW) {
     mMasterWindow->create(sf::VideoMode(mMasterWindowWidth, mMasterWindowHeight), "make the bubbles gone", sf::Style::Close);
     mGame = _game;
     mStationaryNodeRenderTexture.create(mGameWindowWidth, mGameWindowHeight);
-    mShooterRenderTexture.create(mMasterWindowWidth, mMasterWindowHeight);
+    mShooterRenderTexture.create(mGameWindowWidth, mMasterWindowHeight);
     mRadius = mGameWindowWidth / ((mGame->mNodeGraph.mBOARD_WIDTH * 2) + 1);
     mGameRenderOffsetFromMaster = sf::Vector2f((mMasterWindowWidth - mGameWindowWidth) / 2, (mMasterWindowHeight - mGameWindowHeight) / 2);
-
 }
 
 void graphics::runGraphicsLoop() {
@@ -62,6 +61,7 @@ void graphics::updateWindow(sf::Time& windowRefreshTimeAcc) {
 
     updateShooterRenderTexture();
     sf::Sprite shooterTextureSprite(mShooterRenderTexture.getTexture());
+    shooterTextureSprite.setPosition(sf::Vector2f(mGameRenderOffsetFromMaster.x, 0));
     mMasterWindow->draw(shooterTextureSprite);
 
     
@@ -84,16 +84,18 @@ sf::CircleShape graphics::getBall() {
 void graphics::updateShooterRenderTexture() {
     mShooterRenderTexture.clear(sf::Color::Transparent);
 
-    mShooterRenderTexture.draw((mGame->mShooter.getArrowSprite());
+    sf::Sprite arrow = mGame->mShooter.getArrowSprite();
+    arrow.setPosition(meterToGamePixels(arrow.getPosition()));
+    mShooterRenderTexture.draw(arrow);
 
     sf::CircleShape circle = getBall();
     circle.setFillColor(mGame->mShooter.mLoadedBullet.mColor);
-    circle.setPosition(mGame->mShooter.getLoadedBulletPosition());
+    circle.setPosition(meterToGamePixels(mGame->mShooter.getOrigin()));
     mShooterRenderTexture.draw(circle);
 
     for (bullet& b : mGame->mActiveBullets) {
         circle.setFillColor(b.mColor);
-        circle.setPosition(b.mPos);
+        circle.setPosition(meterToGamePixels(b.mMeterPos));
         mShooterRenderTexture.draw(circle);
     }
 
@@ -107,7 +109,7 @@ void graphics::updateStationaryNodeRenderTexture() {
     for (node& currentNode : mGame->mNodeGraph.mGraph) {
         if (!currentNode.mIsDisabled) {
             circle.setFillColor(currentNode.mColor);
-            circle.setPosition(getStationaryCirclePixelCenter(currentNode.mPos));
+            circle.setPosition(getStationaryCirclePixelCenter(currentNode.mIndex));
             mStationaryNodeRenderTexture.draw(circle);
         }
     }
@@ -115,14 +117,10 @@ void graphics::updateStationaryNodeRenderTexture() {
 }
 
 sf::Vector2f graphics::getStationaryCirclePixelCenter(int _pos) {
-    bool isEvenRow = ((_pos / mGame->mBOARD_WIDTH) % 2 == 0);
-    float horizontalOffset = (isEvenRow ? mRadius : 2 * mRadius) + (float)((_pos % mGame->mBOARD_WIDTH) * mRadius * 2);
-    float verticalOffset = mRadius + (sqrtf(3) * mRadius * (_pos / mGame->mBOARD_WIDTH)); 
-    sf::Vector2f tmp = sf::Vector2f(horizontalOffset, verticalOffset);
-    return(tmp);
+    return(meterToGamePixels(mGame->mNodeGraph.mGraph[_pos].mMeterPos));
 }
 
-sf::Vector2i graphics::meterToPixels(sf::Vector2f) {
-
+sf::Vector2f graphics::meterToGamePixels(sf::Vector2f _meterPos) {
+    return(sf::Vector2f(_meterPos.x * mRadius, _meterPos.y * mRadius));
 }
 
