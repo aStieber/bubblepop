@@ -112,8 +112,8 @@ void node::updateAdjacencies(std::vector<node>& _graph) {
 
     mNodeAdjacencyList.clear();	
     for (int i = 0; i < mAdjacencyList->size(); i++) {
-        if (!_graph[i].mIsDisabled) {
-            mNodeAdjacencyList.push_back(&_graph[i]);
+        if (!_graph[mAdjacencyList->at(i)].mIsDisabled) {
+            mNodeAdjacencyList.push_back(&_graph[mAdjacencyList->at(i)]);
         }
     }
 }

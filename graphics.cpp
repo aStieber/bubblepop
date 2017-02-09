@@ -61,7 +61,7 @@ void graphics::updateWindow(sf::Time& windowRefreshTimeAcc) {
 
     updateShooterRenderTexture();
     sf::Sprite shooterTextureSprite(mShooterRenderTexture.getTexture());
-    shooterTextureSprite.setPosition(sf::Vector2f(mGameRenderOffsetFromMaster.x, 0));
+    shooterTextureSprite.setPosition(mGameRenderOffsetFromMaster);
     mMasterWindow->draw(shooterTextureSprite);
 
     

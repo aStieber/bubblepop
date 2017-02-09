@@ -1,7 +1,6 @@
 #pragma once
 #include "nodeGraph.h"
 
-class node;
 class shooter;
 
 class bullet {
@@ -34,12 +33,14 @@ private:
     float mCurrentAngle = 0;
     float mAimSpeed = .5;
     float mAngleLimit = 70;
-    float mBulletSpeed = .16;
+    float mBulletSpeed = .18;
 
     sf::Vector2f mOrigin;
 
     sf::Sprite mArrowSprite;
     sf::Texture mArrowTexture;
+    
+
     bool adjustAim(float _speed);
     void fireBullet(std::vector<bullet>& _activeBullets);
     void updateMagazine();
@@ -61,10 +62,15 @@ public:
     nodeGraph mNodeGraph;
 	shooter mShooter;
 
-    const sf::Vector2f mBoardMeterSize = sf::Vector2f(mBOARD_WIDTH + .5, mBOARD_HEIGHT);
-
     std::vector<bullet> mActiveBullets;
-
     void runPhysicsFrame(std::vector<sf::Keyboard::Key>& _keys);
+    
+private:
+    std::vector<node*> mFaceNodes;
+    void updateFaceNodes();
+    void updateBulletGraphInteraction();
+    const sf::Vector2f mBoardMeterSize = sf::Vector2f(mBOARD_WIDTH + .5, mBOARD_HEIGHT);
+    float getDistanceBetweenPoints(sf::Vector2f _a, sf::Vector2f _b);
+    void translateBulletToClosestNode(bullet& b, node& n);
 };
 
