@@ -7,11 +7,16 @@ graphics::graphics() {}
 graphics::graphics(game* _game, sf::RenderWindow* _rW) {
     mMasterWindow = _rW;
     mMasterWindow->create(sf::VideoMode(mMasterWindowWidth, mMasterWindowHeight), "make the bubbles gone", sf::Style::Close);
+    mGameRenderOffsetFromMaster = sf::Vector2f((mMasterWindowWidth - mGameWindowWidth) / 2, (mMasterWindowHeight - mGameWindowHeight) / 2);
     mGame = _game;
+    mRadius = (float)mGameWindowWidth / (float)((mGame->mNodeGraph.mBOARD_WIDTH * 2) + 1);
+
     mStationaryNodeRenderTexture.create(mGameWindowWidth, mGameWindowHeight);
     mShooterRenderTexture.create(mGameWindowWidth, mMasterWindowHeight);
-    mRadius = (float)mGameWindowWidth / (float)((mGame->mNodeGraph.mBOARD_WIDTH * 2) + 1);
-    mGameRenderOffsetFromMaster = sf::Vector2f((mMasterWindowWidth - mGameWindowWidth) / 2, (mMasterWindowHeight - mGameWindowHeight) / 2);
+    mBackgroundRenderTexture.create(mGameWindowWidth, mGameWindowHeight);
+    mBackgroundRenderTexture.clear(sf::Color(160, 200, 220));
+    
+    
 }
 
 void graphics::runGraphicsLoop() {
@@ -27,9 +32,7 @@ void graphics::runGraphicsLoop() {
             std::vector<sf::Keyboard::Key> keys = collectInputsFromDevices();
 
             mGame->runPhysicsFrame(keys);
-            
-            
-            
+
             gameTimeAcc -= gameInterval;
         }
 
@@ -40,18 +43,18 @@ void graphics::runGraphicsLoop() {
 
 void graphics::updateDestroyedNodes() {
     std::vector<destroyedNode> tmpDNs;
-    if (mGame->getDestroyedNodes().size() > 0) {
-        tmpDNs = createDestroyedNodes(mGame->getDestroyedNodes());
+    if (mGame->getDestroyedNodeIndexes().size() > 0) {
+        tmpDNs = createDestroyedNodes(mGame->getDestroyedNodeIndexes());
     }
     else if (mDestroyedNodes.size() > 0) {
         tmpDNs = mDestroyedNodes;
     }
     else { return; }
     mDestroyedNodes.clear();
-    
-    for (destroyedNode& dN : tmpDNs) {
+    for (destroyedNode dN : tmpDNs) {
         if (dN.mColor.a >= dN.mTransparencyIncreaseRate) {
             dN.mColor.a -= dN.mTransparencyIncreaseRate;
+            dN.mMeterPos.y += .01;
             mDestroyedNodes.emplace_back(dN);
         }
     }
@@ -60,9 +63,10 @@ void graphics::updateDestroyedNodes() {
 std::vector<destroyedNode> graphics::createDestroyedNodes(std::vector<int> _nodeIndexes) {
     std::vector<destroyedNode> tmp(_nodeIndexes.size());
     for (int i = 0; i < _nodeIndexes.size(); i++) {
-        node* n = &mGame->mNodeGraph.mGraph[i];
+        node* n = &mGame->mNodeGraph.mGraph[_nodeIndexes[i]];
         tmp[i].mColor = n->mColor;
         tmp[i].mMeterPos = n->mMeterPos;
+        tmp[i].mIndex = n->mIndex;
     }
     mGame->clearDestroyedNodes();
     return(tmp);
@@ -87,6 +91,10 @@ std::vector<sf::Keyboard::Key> graphics::collectInputsFromDevices() {
 
 void graphics::updateWindow(sf::Time& windowRefreshTimeAcc) {
     mMasterWindow->clear(sf::Color(20, 20, 20));
+
+    sf::Sprite backgroundSprite(mBackgroundRenderTexture.getTexture());
+    backgroundSprite.setPosition(mGameRenderOffsetFromMaster);
+    mMasterWindow->draw(backgroundSprite);
 
     updateStationaryNodeRenderTexture();
     sf::Sprite gameTextureSprite(mStationaryNodeRenderTexture.getTexture());
@@ -131,6 +139,7 @@ void graphics::updateShooterRenderTexture() {
     for (destroyedNode& dN : mDestroyedNodes) {
         circle.setFillColor(dN.mColor);
         circle.setPosition(meterToGamePixels(dN.mMeterPos));
+        //circle.setPosition(getStationaryCirclePixelCenter(dN.mIndex));
         mShooterRenderTexture.draw(circle);
     }
 
@@ -145,8 +154,38 @@ void graphics::updateShooterRenderTexture() {
     mShooterRenderTexture.display();
 }
 
+sf::Text graphics::DEBUG_getText(std::string text, sf::Font& font) {
+    sf::Text tmp(text, font);
+    tmp.setCharacterSize(20);
+    tmp.setFillColor(sf::Color::Black);
+    tmp.setOrigin(mRadius / 2, mRadius / 2);
+    return(tmp);
+}
+
 void graphics::updateStationaryNodeRenderTexture() {
-	mStationaryNodeRenderTexture.clear(sf::Color(160, 200, 220));
+    sf::Font FONT;
+    FONT.loadFromFile("Inconsolata-Regular.ttf");
+	mStationaryNodeRenderTexture.clear(sf::Color::Transparent);
+    sf::CircleShape circle = getBall();
+    for (node& currentNode : mGame->mNodeGraph.mGraph) {
+        circle.setPosition(getStationaryCirclePixelCenter(currentNode.mIndex));
+        if (!currentNode.mIsDisabled) {
+            circle.setFillColor(currentNode.mColor);
+            mStationaryNodeRenderTexture.draw(circle);
+            sf::Text t = DEBUG_getText(std::to_string(currentNode.mIndex), FONT);
+            t.setPosition(circle.getPosition());
+
+
+            mStationaryNodeRenderTexture.draw(t);
+        }
+    }
+    mStationaryNodeRenderTexture.display();
+}
+
+/*
+    void graphics::updateStationaryNodeRenderTexture() {
+    
+    mStationaryNodeRenderTexture.clear(sf::Color::Transparent);
     sf::CircleShape circle = getBall();
     for (node& currentNode : mGame->mNodeGraph.mGraph) {
         if (!currentNode.mIsDisabled) {
@@ -157,6 +196,7 @@ void graphics::updateStationaryNodeRenderTexture() {
     }
     mStationaryNodeRenderTexture.display();
 }
+*/
 
 sf::Vector2f graphics::getStationaryCirclePixelCenter(int _pos) {
     return(meterToGamePixels(mGame->mNodeGraph.mGraph[_pos].mMeterPos));

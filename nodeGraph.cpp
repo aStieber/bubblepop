@@ -1,5 +1,6 @@
 #include "nodeGraph.h"
 #include <iostream>
+#include <algorithm>
 
 
 
@@ -70,18 +71,79 @@ void nodeGraph::addNode(int _Index) {
     updateNodeAdjacencies();
 }
 
+void nodeGraph::checkForDrops(std::vector<int>& _doomedIndexes) {
+    std::vector<int> confirmedSafeIndexes;
+    std::vector<int> visitedIndexes(_doomedIndexes);
+    for (int i : _doomedIndexes) {
+        for (node* n : mGraph[i].mNodeAdjacencyList) {
+            verifyIsSafe(n->mIndex, confirmedSafeIndexes, visitedIndexes);
+        }
+    }
+    
+    std::sort(confirmedSafeIndexes.begin(), confirmedSafeIndexes.end());
+    std::sort(visitedIndexes.begin(), visitedIndexes.end());
+    
+    std::vector<int> newDoomed(visitedIndexes.size() - confirmedSafeIndexes.size());
+    std::set_difference(confirmedSafeIndexes.begin(), confirmedSafeIndexes.end(), visitedIndexes.begin(), visitedIndexes.end(), newDoomed.begin());
+    
+    //_doomedIndexes = newDoomed;
+
+
+
+}
+
+bool nodeGraph::verifyIsSafe(int _triggerIndex, std::vector<int>& _confirmedSafeIndexes, std::vector<int>& _visitedIndexes) {
+    _visitedIndexes.emplace_back(_triggerIndex);
+    bool result = _triggerIndex < mBOARD_WIDTH;
+    if (result) {
+        _confirmedSafeIndexes.emplace_back(_triggerIndex);
+        return(true);
+    }
+
+    
+    for (node* n : mGraph[_triggerIndex].mNodeAdjacencyList) {
+        bool isVisited = false;
+        for (int i : _visitedIndexes) {
+            if (n->mIndex == i) {
+                isVisited = true;
+            }
+        }
+        if (isVisited) {
+            for (int i : _confirmedSafeIndexes) {
+                if (n->mIndex == i) {
+                    _confirmedSafeIndexes.emplace_back(_triggerIndex);
+                    return(true);
+                }
+            }
+        }
+        else result & verifyIsSafe(n->mIndex, _confirmedSafeIndexes, _visitedIndexes);  
+    }
+    
+    if (result) { _confirmedSafeIndexes.emplace_back(_triggerIndex); }
+    return(result);
+}
+
 std::vector<int> nodeGraph::checkForDestruction(int _triggerPos) {
-    std::vector<int> matchingNodeIndexes;
+    std::vector<int> doomedIndexes;
 
     std::vector<bool> visitedVec(mBOARD_HEIGHT * mBOARD_WIDTH, false);
-    checkColorMatch(_triggerPos, visitedVec, matchingNodeIndexes);
-    if (matchingNodeIndexes.size() >= 3) {
-        return(matchingNodeIndexes);
+
+    mGraph[_triggerPos].updateAdjacencies(mGraph);
+    checkColorMatch(_triggerPos, visitedVec, doomedIndexes);
+    if (doomedIndexes.size() >= 3) {
+        //for each node adjacent to a destroyed node, verify it is anchored
+        
+        checkForDrops(doomedIndexes);
+       
+        
+
+
+        return(doomedIndexes);
     }
 
     return(std::vector<int>());
 
-    //for each node adjacent to a destroyed node, verify it is anchored
+    
     
 }
 

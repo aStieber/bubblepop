@@ -1,7 +1,10 @@
 #pragma once
 #include <SFML\Graphics.hpp>
+#include <string>
 #include "nodeGraph.h"
 #include "game.h"
+
+#define DEBUG 1
 
 class destroyedNode;
 
@@ -28,6 +31,7 @@ private:
     sf::RenderWindow* mMasterWindow;
     sf::RenderTexture mStationaryNodeRenderTexture;
     sf::RenderTexture mShooterRenderTexture;
+    sf::RenderTexture mBackgroundRenderTexture;
     sf::Vector2f mGameRenderOffsetFromMaster;
 
     std::vector<destroyedNode> mDestroyedNodes;
@@ -43,13 +47,15 @@ private:
     sf::Vector2f getStationaryCirclePixelCenter(int _pos);
     sf::Vector2f meterToGamePixels(sf::Vector2f _meterPos);
     std::vector<destroyedNode> createDestroyedNodes(std::vector<int> _nodeIndexes);
+    sf::Text graphics::DEBUG_getText(std::string text, sf::Font& font);
 };
 
 class destroyedNode {
 public:
     sf::Color mColor;
     sf::Vector2f mMeterPos;
-    short mTransparencyIncreaseRate = 2;
+    int mIndex;
+    short mTransparencyIncreaseRate = 4;
 };
 
 
