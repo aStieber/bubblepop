@@ -16,6 +16,9 @@ void nodeGraph::populateAdjacencyMasterList() {
 
         if (leftAllowed) { tmpAdjacencyList.push_back(i - 1); } //left
         if (rightAllowed) { tmpAdjacencyList.push_back(i + 1); }//right
+
+        leftAllowed |= !isEvenRow;
+        rightAllowed |= isEvenRow;
         if (i >= mBOARD_WIDTH) { //not top row
             if (leftAllowed) { tmpAdjacencyList.push_back(i - mBOARD_WIDTH + leftMod); } //upper left
             if (rightAllowed) { tmpAdjacencyList.push_back(i - mBOARD_WIDTH + rightMod); } //upper right			
@@ -72,55 +75,44 @@ void nodeGraph::addNode(int _Index) {
 }
 
 void nodeGraph::checkForDrops(std::vector<int>& _doomedIndexes) {
-    std::vector<int> confirmedSafeIndexes;
-    std::vector<int> visitedIndexes(_doomedIndexes);
-    for (int i : _doomedIndexes) {
-        for (node* n : mGraph[i].mNodeAdjacencyList) {
-            verifyIsSafe(n->mIndex, confirmedSafeIndexes, visitedIndexes);
+    std::vector<bool> confirmedSafeIndexes(mBOARD_HEIGHT * mBOARD_WIDTH, false);
+
+    bool isDoomed;
+    for (int i = 0; i < confirmedSafeIndexes.size(); i++) {
+        isDoomed = false;
+        for (int z : _doomedIndexes) { isDoomed |= (z == i); }
+        if (!isDoomed) { verifyIsSafe(i, confirmedSafeIndexes); }
+    }
+    //go the other direction lol
+    for (int j = confirmedSafeIndexes.size() - 1; j >= 0; j--) {
+        isDoomed = false;
+        for (int z : _doomedIndexes) { isDoomed |= (z == j); }
+        if (!isDoomed) { verifyIsSafe(j, confirmedSafeIndexes); }
+    }
+
+    //find destroyedNodes
+    for (int k = 0; k < confirmedSafeIndexes.size(); k++) {
+        if (!mGraph[k].mIsDisabled && !confirmedSafeIndexes[k]) {
+            _doomedIndexes.emplace_back(k);
         }
     }
-    
-    std::sort(confirmedSafeIndexes.begin(), confirmedSafeIndexes.end());
-    std::sort(visitedIndexes.begin(), visitedIndexes.end());
-    
-    std::vector<int> newDoomed(visitedIndexes.size() - confirmedSafeIndexes.size());
-    std::set_difference(confirmedSafeIndexes.begin(), confirmedSafeIndexes.end(), visitedIndexes.begin(), visitedIndexes.end(), newDoomed.begin());
-    
-    //_doomedIndexes = newDoomed;
-
-
 
 }
 
-bool nodeGraph::verifyIsSafe(int _triggerIndex, std::vector<int>& _confirmedSafeIndexes, std::vector<int>& _visitedIndexes) {
-    _visitedIndexes.emplace_back(_triggerIndex);
-    bool result = _triggerIndex < mBOARD_WIDTH;
-    if (result) {
-        _confirmedSafeIndexes.emplace_back(_triggerIndex);
-        return(true);
-    }
-
-    
-    for (node* n : mGraph[_triggerIndex].mNodeAdjacencyList) {
-        bool isVisited = false;
-        for (int i : _visitedIndexes) {
-            if (n->mIndex == i) {
-                isVisited = true;
+void nodeGraph::verifyIsSafe(int _triggerIndex, std::vector<bool>& _confirmedSafeIndexes) {
+    if (!mGraph[_triggerIndex].mIsDisabled) {
+        //if on top row
+        if (_triggerIndex < 16) { _confirmedSafeIndexes[_triggerIndex] = true; }
+        else {
+            bool tmp = false;
+            for (int j : *mGraph[_triggerIndex].mAdjacencyList) {
+                tmp |= _confirmedSafeIndexes[j];
+            }
+            if (tmp) {
+                _confirmedSafeIndexes[_triggerIndex] = true;
             }
         }
-        if (isVisited) {
-            for (int i : _confirmedSafeIndexes) {
-                if (n->mIndex == i) {
-                    _confirmedSafeIndexes.emplace_back(_triggerIndex);
-                    return(true);
-                }
-            }
-        }
-        else result & verifyIsSafe(n->mIndex, _confirmedSafeIndexes, _visitedIndexes);  
     }
-    
-    if (result) { _confirmedSafeIndexes.emplace_back(_triggerIndex); }
-    return(result);
 }
 
 std::vector<int> nodeGraph::checkForDestruction(int _triggerPos) {
@@ -131,13 +123,7 @@ std::vector<int> nodeGraph::checkForDestruction(int _triggerPos) {
     mGraph[_triggerPos].updateAdjacencies(mGraph);
     checkColorMatch(_triggerPos, visitedVec, doomedIndexes);
     if (doomedIndexes.size() >= 3) {
-        //for each node adjacent to a destroyed node, verify it is anchored
-        
         checkForDrops(doomedIndexes);
-       
-        
-
-
         return(doomedIndexes);
     }
 

@@ -92,7 +92,7 @@ void shooter::update(std::vector<sf::Keyboard::Key>& _keys, std::vector<bullet>&
 game::game() {
     mNUM_NODES = mBOARD_HEIGHT * mBOARD_WIDTH;
     mNodeGraph = nodeGraph(mBOARD_WIDTH, mBOARD_HEIGHT);
-    mShooter.mGameDimensions = sf::Vector2f((mBOARD_WIDTH * 2)  + .5, (2 * mBOARD_HEIGHT));
+    mShooter.mGameDimensions = sf::Vector2f((mBOARD_WIDTH * 2)  + .5f, (2 * mBOARD_HEIGHT));
     mShooter.setOrigin(mShooter.mGameDimensions);
     updateFaceNodes();
 }

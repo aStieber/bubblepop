@@ -26,7 +26,7 @@ public:
 private:
     void checkColorMatch(int _triggerPos, std::vector<bool>& _visitedVec, std::vector<int>& _matchingNodeSet);
     void checkForDrops(std::vector<int>& _doomedIndexes);
-    bool verifyIsSafe(int _triggerIndex, std::vector<int>& _confirmedSafeIndexes, std::vector<int>& _visitedIndexes);
+    void verifyIsSafe(int _triggerIndex, std::vector<bool>& _confirmedSafeIndexes);
 };
 
 
