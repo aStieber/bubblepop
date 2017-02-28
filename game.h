@@ -1,6 +1,8 @@
 #pragma once
 #include "nodeGraph.h"
 
+enum {STATUS_ALIVE, STATUS_WON, STATUS_LOST};
+
 class shooter;
 
 class bullet {
@@ -32,7 +34,7 @@ public:
 private:
     float mCurrentAngle = 0.0f;
     float mAimSpeed = .5f;
-    float mAngleLimit = 70.0f;
+    float mAngleLimit = 86.0f;
     float mBulletSpeed = .18f;
 
     sf::Vector2f mOrigin;
@@ -45,9 +47,6 @@ private:
     void fireBullet(std::vector<bullet>& _activeBullets);
     void updateMagazine();
     void updateActiveBullets(std::vector<bullet>& _activeBullets);
-
-    
-
 };
 
 
@@ -59,23 +58,27 @@ public:
     const int mBOARD_WIDTH = 16;
     const int mBOARD_HEIGHT = 12;
     int mNUM_NODES;
+    char mStatus;
     nodeGraph mNodeGraph;
 	shooter mShooter;
+    
 
     std::vector<bullet> mActiveBullets;
     void runPhysicsFrame(std::vector<sf::Keyboard::Key>& _keys);
     std::vector<int> getDestroyedNodeIndexes();
     void clearDestroyedNodes();
+    void reset();
     
 private:
     std::vector<int> mDestroyedNodes;
     std::vector<node*> mFaceNodes;
     void updateFaceNodes();
     void updateBulletGraphInteraction();
-    const sf::Vector2f mBoardMeterSize = sf::Vector2f(mBOARD_WIDTH + .5, mBOARD_HEIGHT);
+    const sf::Vector2f mBoardMeterSize = sf::Vector2f(mBOARD_WIDTH + .5f, (float)mBOARD_HEIGHT);
     float getDistanceBetweenPoints(sf::Vector2f _a, sf::Vector2f _b);
     int translateBulletToClosestAdjacentNode(bullet& b, node& n);
     int translateBulletToClosestCeilingNode(bullet& b);
     void updateDestroyedNodes();
+    bool checkForVictory();
 };
 

@@ -2,24 +2,25 @@
 #include <vector>
 #include <iostream>
 
-#include "nodeGraph.h"
 #include "graphics.h"
 #include "game.h"
+#include "fixedNeuralNet.h"
 
 
 int main()
 {
-    srand(time(NULL));
-    sf::RenderWindow window;
+    bool nnMode = true;
+    
     game theGame;
 
-    graphics g(&theGame, &window);
-    g.runGraphicsLoop();
+    if (nnMode) {
+        neuralNet nn(&theGame);
+    }
+    else {
+        sf::RenderWindow window;
+        graphics g(&theGame, &window);
+        g.runGraphicsLoop();
+    }
+    
     return 0;
 }
-
-/*
-window.clear();
-window.draw(shape);
-window.display();
-}*/

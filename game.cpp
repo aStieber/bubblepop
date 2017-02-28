@@ -1,7 +1,7 @@
 #include "game.h"
 #include <stdio.h>
 
-# define M_PI           3.141592635f  /* pi */
+#define M_PI 3.141592635f  /* pi */
 
 std::vector<sf::Color> bullet::colorVec = { sf::Color::White, sf::Color::Magenta, sf::Color::Yellow,
 sf::Color::Red, sf::Color::Blue, sf::Color::Green };
@@ -89,12 +89,18 @@ void shooter::update(std::vector<sf::Keyboard::Key>& _keys, std::vector<bullet>&
     }
 }
 
-game::game() {
+void game::reset() {
     mNUM_NODES = mBOARD_HEIGHT * mBOARD_WIDTH;
     mNodeGraph = nodeGraph(mBOARD_WIDTH, mBOARD_HEIGHT);
-    mShooter.mGameDimensions = sf::Vector2f((mBOARD_WIDTH * 2)  + .5f, (2 * mBOARD_HEIGHT));
+    mActiveBullets.clear();
+    mShooter.mGameDimensions = sf::Vector2f((mBOARD_WIDTH * 2) + .5f, (2 * mBOARD_HEIGHT));
     mShooter.setOrigin(mShooter.mGameDimensions);
+    mStatus = STATUS_ALIVE;
     updateFaceNodes();
+}
+
+game::game() {
+    reset();
 }
 
 void game::updateFaceNodes() {
@@ -136,7 +142,7 @@ int game::translateBulletToClosestAdjacentNode(bullet& b, node& n) {
 }
 
 int game::translateBulletToClosestCeilingNode(bullet& b) {
-    int minIndex = 0;
+    int minIndex = -1;
     float minDist = FLT_MAX;
     for (int i = 0; i < mBOARD_WIDTH; i++) {
         float tmpDist = getDistanceBetweenPoints(mNodeGraph.mGraph[i].mMeterPos, b.mMeterPos);
@@ -144,6 +150,10 @@ int game::translateBulletToClosestCeilingNode(bullet& b) {
             minDist = tmpDist;
             minIndex = i;
         }
+    }
+    if (minIndex >= 0) {
+        mNodeGraph.mGraph[minIndex].mColor = b.mColor;
+        mNodeGraph.mGraph[minIndex].mIsDisabled = false;
     }
     return(minIndex);
 }
@@ -162,9 +172,15 @@ void game::updateBulletGraphInteraction() {
             else {
                 for (node* n : mFaceNodes) {
                     if (getDistanceBetweenPoints(b.mMeterPos, n->mMeterPos) <= sqrt(3)) {
-                        mDestroyedNodes = mNodeGraph.checkForDestruction(translateBulletToClosestAdjacentNode(b, *n));
-                        destroyBullet = true;
-                        break;
+                        if (n->mIndex > (mBOARD_HEIGHT * (mBOARD_WIDTH - 1))) {
+                            mStatus = STATUS_LOST;
+                        }
+                        else {
+                            mDestroyedNodes = mNodeGraph.checkForDestruction(translateBulletToClosestAdjacentNode(b, *n));
+                            destroyBullet = true;
+                            break;
+                        }
+                       
                     }
                 }
             }
@@ -172,20 +188,19 @@ void game::updateBulletGraphInteraction() {
         }
         mActiveBullets = tmpActiveBulletsVec;
     }
-
 }
 
 
 void game::runPhysicsFrame(std::vector<sf::Keyboard::Key>& _keys) {    
-   
     mShooter.update(_keys, mActiveBullets);
     updateBulletGraphInteraction();
     updateDestroyedNodes();
-    mNodeGraph.updateNodeAdjacencies();
-    updateFaceNodes();
+    if (checkForVictory()) { mStatus = STATUS_WON; }
+    else {
+        mNodeGraph.updateNodeAdjacencies();
+        updateFaceNodes();
+    }
     
-    
-
 }
 
 void game::updateDestroyedNodes() {
@@ -196,4 +211,13 @@ void game::updateDestroyedNodes() {
 
 std::vector<int> game::getDestroyedNodeIndexes() {
     return (mDestroyedNodes);
+}
+
+bool game::checkForVictory() {
+    for (node& n : mNodeGraph.mGraph) {
+        if (!n.mIsDisabled) {
+            return(false);
+        }
+    }
+    return(true);
 }

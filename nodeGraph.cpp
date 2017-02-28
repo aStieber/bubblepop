@@ -105,12 +105,8 @@ void nodeGraph::verifyIsSafe(int _triggerIndex, std::vector<bool>& _confirmedSaf
         if (_triggerIndex < 16) { _confirmedSafeIndexes[_triggerIndex] = true; }
         else {
             bool tmp = false;
-            for (int j : *mGraph[_triggerIndex].mAdjacencyList) {
-                tmp |= _confirmedSafeIndexes[j];
-            }
-            if (tmp) {
-                _confirmedSafeIndexes[_triggerIndex] = true;
-            }
+            for (int j : *mGraph[_triggerIndex].mAdjacencyList) { tmp |= _confirmedSafeIndexes[j]; }
+            if (tmp) { _confirmedSafeIndexes[_triggerIndex] = true; }
         }
     }
 }
@@ -126,11 +122,12 @@ std::vector<int> nodeGraph::checkForDestruction(int _triggerPos) {
         checkForDrops(doomedIndexes);
         return(doomedIndexes);
     }
+    else {
+        doomedIndexes.clear();
+        return(doomedIndexes);
+    }
 
     return(std::vector<int>());
-
-    
-    
 }
 
 void nodeGraph::checkColorMatch(int _triggerIndex, std::vector<bool>& _visitedVec, std::vector<int>& _matchingNodeIndexes) {
@@ -160,7 +157,7 @@ node::node(int _pos, std::vector<int>* _adjacencyList, bool _isDisabled, sf::Col
 
 void node::updateAdjacencies(std::vector<node>& _graph) {
     if (mIsDisabled) { return; }
-
+     
     mNodeAdjacencyList.clear();	
     for (int i : *mAdjacencyList) {
         if (!_graph[i].mIsDisabled) {

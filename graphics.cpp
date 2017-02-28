@@ -15,14 +15,15 @@ graphics::graphics(game* _game, sf::RenderWindow* _rW) {
     mShooterRenderTexture.create(mGameWindowWidth, mMasterWindowHeight);
     mBackgroundRenderTexture.create(mGameWindowWidth, mGameWindowHeight);
     mBackgroundRenderTexture.clear(sf::Color(160, 200, 220));
-    
-    
+
+    mFont.loadFromFile("Inconsolata-Regular.ttf");
 }
 
 void graphics::runGraphicsLoop() {
     sf::Clock clock;
     sf::Time gameTimeAcc;
     sf::Time windowRefreshTimeAcc;
+    bool justReset = false;
 
     while (true) {
         sf::Time t = clock.restart();
@@ -30,14 +31,18 @@ void graphics::runGraphicsLoop() {
         windowRefreshTimeAcc += t;
         while (gameTimeAcc >= gameInterval) {
             std::vector<sf::Keyboard::Key> keys = collectInputsFromDevices();
-
-            mGame->runPhysicsFrame(keys);
-
+            if (mGame->mStatus == STATUS_ALIVE) { mGame->runPhysicsFrame(keys); }
+            else {
+                for (sf::Keyboard::Key& k : keys) {
+                    if (k == sf::Keyboard::R) { mGame->reset(); }
+                }
+            }
             gameTimeAcc -= gameInterval;
         }
 
         if (windowRefreshTimeAcc >= windowRefreshInterval) { updateWindow(windowRefreshTimeAcc); }
     }
+
 
 }
 
@@ -106,6 +111,11 @@ void graphics::updateWindow(sf::Time& windowRefreshTimeAcc) {
     shooterTextureSprite.setPosition(mGameRenderOffsetFromMaster);
     mMasterWindow->draw(shooterTextureSprite);
 
+    if (mGame->mStatus != STATUS_ALIVE) {
+        std::string tmp = (mGame->mStatus == STATUS_WON ? "You won!" : "You lost.");
+        sf::Text gameOverText = getGameOverText(tmp.append(" R to restart."));
+        mMasterWindow->draw(gameOverText);
+    }
     
 
     mMasterWindow->display();
@@ -154,25 +164,33 @@ void graphics::updateShooterRenderTexture() {
     mShooterRenderTexture.display();
 }
 
-sf::Text graphics::DEBUG_getText(std::string text, sf::Font& font) {
-    sf::Text tmp(text, font);
+sf::Text graphics::DEBUG_getText(std::string text) {
+    sf::Text tmp(text, mFont);
     tmp.setCharacterSize(20);
     tmp.setFillColor(sf::Color::Black);
     tmp.setOrigin(mRadius / 2, mRadius / 2);
     return(tmp);
 }
 
+sf::Text graphics::getGameOverText(std::string text) {
+    sf::Text tmp(text, mFont);
+    tmp.setPosition(mGameRenderOffsetFromMaster.x + 5, (mMasterWindowHeight / 2.0) - 50);
+    tmp.setCharacterSize(70);
+    tmp.setFillColor(sf::Color::Red);
+    tmp.setOutlineColor(sf::Color::Black);
+    tmp.setOutlineThickness(2);
+    return(tmp);
+}
+
 void graphics::updateStationaryNodeRenderTexture() {
-    sf::Font FONT;
-    FONT.loadFromFile("Inconsolata-Regular.ttf");
-	mStationaryNodeRenderTexture.clear(sf::Color::Transparent);
+ 	mStationaryNodeRenderTexture.clear(sf::Color::Transparent);
     sf::CircleShape circle = getBall();
     for (node& currentNode : mGame->mNodeGraph.mGraph) {
         circle.setPosition(getStationaryCirclePixelCenter(currentNode.mIndex));
         if (!currentNode.mIsDisabled) {
             circle.setFillColor(currentNode.mColor);
             mStationaryNodeRenderTexture.draw(circle);
-            sf::Text t = DEBUG_getText(std::to_string(currentNode.mIndex), FONT);
+            sf::Text t = DEBUG_getText(std::to_string(currentNode.mIndex));
             t.setPosition(circle.getPosition());
 
 

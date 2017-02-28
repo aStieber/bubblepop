@@ -47,7 +47,9 @@ private:
     sf::Vector2f getStationaryCirclePixelCenter(int _pos);
     sf::Vector2f meterToGamePixels(sf::Vector2f _meterPos);
     std::vector<destroyedNode> createDestroyedNodes(std::vector<int> _nodeIndexes);
-    sf::Text graphics::DEBUG_getText(std::string text, sf::Font& font);
+    sf::Text graphics::DEBUG_getText(std::string text);
+    sf::Text graphics::getGameOverText(std::string text);
+    sf::Font mFont;
 };
 
 class destroyedNode {
