@@ -4,13 +4,14 @@
 #define M_PI 3.141592635f  /* pi */
 
 std::vector<sf::Color> bullet::colorVec = { sf::Color::White, sf::Color::Magenta, sf::Color::Yellow,
-sf::Color::Red, sf::Color::Blue, sf::Color::Green };
+                                            sf::Color::Red, sf::Color::Blue, sf::Color::Green };
 
-sf::Color bullet::getRandomColor() {
-    return(colorVec[rand() % colorVec.size()]);
+void bullet::setRandomColor() {
+    mColorIndex = rand() % (short)colorVec.size();
+    mColor = colorVec[mColorIndex];
 }
 bullet::bullet() {
-    mColor = getRandomColor();
+    setRandomColor();
 }
 shooter::shooter() {
     mArrowTexture.loadFromFile("images/shooter_arrow.png");
@@ -27,10 +28,14 @@ bool shooter::adjustAim(float _speed) {
     return(false);
 }
 
+float shooter::getCurrentAngle() {
+    return(mCurrentAngle);
+}
+
 void shooter::fireBullet(std::vector<bullet>& _activeBullets) {
     mLoadedBullet.mWasFired = true;
     mLoadedBullet.mMeterPos = getOrigin();
-    mLoadedBullet.mVector = sf::Vector2f(mBulletSpeed * sinf((M_PI * mCurrentAngle) / 180.0), mBulletSpeed * -cosf((M_PI * mCurrentAngle) / 180.0));
+    mLoadedBullet.mVector = sf::Vector2f(mBulletSpeed * sinf((M_PI * mCurrentAngle) / 180.0f), mBulletSpeed * -cosf((M_PI * mCurrentAngle) / 180.0f));
     //printf("CurrentAngle: %.02f  | x: %.02f  | y: %.02f \n", mCurrentAngle, mLoadedBullet.mVector.x, mLoadedBullet.mVector.y);
     _activeBullets.push_back(mLoadedBullet);
 
@@ -93,10 +98,21 @@ void game::reset() {
     mNUM_NODES = mBOARD_HEIGHT * mBOARD_WIDTH;
     mNodeGraph = nodeGraph(mBOARD_WIDTH, mBOARD_HEIGHT);
     mActiveBullets.clear();
-    mShooter.mGameDimensions = sf::Vector2f((mBOARD_WIDTH * 2) + .5f, (2 * mBOARD_HEIGHT));
+    mShooter.mGameDimensions = sf::Vector2f((float)(mBOARD_WIDTH * 2) + .5f, (2 * mBOARD_HEIGHT));
     mShooter.setOrigin(mShooter.mGameDimensions);
     mStatus = STATUS_ALIVE;
     updateFaceNodes();
+}
+
+std::vector<short> game::getGraphState() {
+    int size = mNodeGraph.mGraph.size();
+    std::vector<short> tmp(size, -1);
+    for (int i = 0; i < size; i++) {
+        if (!mNodeGraph.mGraph[i].mIsDisabled) {
+            tmp[i] = mNodeGraph.mGraph[i].getColorIndex();
+        }
+    }
+    return(tmp);
 }
 
 game::game() {
@@ -110,6 +126,9 @@ void game::updateFaceNodes() {
             mFaceNodes.emplace_back(&n);
         }
     }
+}
+bool game::getIsBulletInFlight() {
+    return(mActiveBullets.size() > 0);
 }
 
 float game::getDistanceBetweenPoints(sf::Vector2f _a, sf::Vector2f _b) {

@@ -10,13 +10,14 @@ public:
     bullet();
 
     sf::Color mColor;
+    short mColorIndex;
     sf::Vector2f mMeterPos;
     sf::Vector2f mVector;
 
     bool mWasFired = false;
 private:
     static std::vector<sf::Color> colorVec;
-    static sf::Color getRandomColor();
+    void setRandomColor();
 };
 class shooter {
 public:
@@ -26,10 +27,12 @@ public:
     void update(std::vector<sf::Keyboard::Key>& _keys, std::vector<bullet>& _activeBullets);
     sf::Sprite getArrowSprite();
     sf::Vector2f getOrigin();
+    float getCurrentAngle();
     sf::Vector2f mGameDimensions;
 
     bullet mLoadedBullet;
     bullet mUpcomingBullet;
+
 
 private:
     float mCurrentAngle = 0.0f;
@@ -68,6 +71,10 @@ public:
     std::vector<int> getDestroyedNodeIndexes();
     void clearDestroyedNodes();
     void reset();
+
+    //neuralNet stuff
+    std::vector<short> getGraphState();
+    bool getIsBulletInFlight();
     
 private:
     std::vector<int> mDestroyedNodes;

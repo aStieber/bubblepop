@@ -172,4 +172,11 @@ std::vector<sf::Color> node::colorVec = {	sf::Color::White, sf::Color::Magenta, 
 sf::Color node::getRandomColor() {
     return(colorVec[rand() % colorVec.size()]);
 }
+short node::getColorIndex() {
+    for (short i = 0; i < colorVec.size(); i++) {
+        if (mColor == colorVec[i]) {
+            return(i);
+        }
+    }
+}
 

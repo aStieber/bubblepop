@@ -45,6 +45,7 @@ public:
     std::vector<node*> mNodeAdjacencyList;
 
     void updateAdjacencies(std::vector<node>& _graph);
+    short getColorIndex();
 private:
     static std::vector<sf::Color> colorVec; 
     static sf::Color getRandomColor();

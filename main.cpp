@@ -9,7 +9,7 @@
 
 int main()
 {
-    bool nnMode = true;
+    bool nnMode = false;
     
     game theGame;
 
