@@ -11,40 +11,104 @@ size inputs: disabled = -1, 0-7 are colors
 
 */
 
-float fast_sigmoid(float f) {
+static float fast_sigmoid(float f) {
     return(f / (1.0f + fabs(f)));
 }
 
 neuralNet::neuralNet(game* _game) {
     mGameManager = gameManager(_game);
-    mNUM_INPUTS = mGameManager.getNodeCount();
+    mNUM_INPUTS = mGameManager.getNodeCount() + 3; //gameManagerValues
     mRandomEngine = mtEngine();
 
     initializePopulations();
 }
 
 void neuralNet::initializePopulations() {
-    mPopulation.resize(mPOPULATION_COUNT);
-
-    for (species & s : mPopulation) {
-        s = species(mNUM_OUTPUTS, mHIDDEN_NODE_PER_LAYER_COUNT, mNUM_HIDDEN_LAYERS, &mRandomEngine);
+    mPopulations.resize(mPOPULATION_COUNT);
+    for (population& pop : mPopulations) {
+        pop.resize(mSPECIES_COUNT);
+        for (species& s : pop) {
+            s = species(mNUM_OUTPUTS, mNUM_INPUTS, mNUM_HIDDEN_LAYERS, &mRandomEngine);
+        }
     }
 }
 
-species ::species() {}
-species::species(int _outputCount, int _hiddenNodeCount, int _hiddenLayerCount, mtEngine* _randEngine) {
-    mRandEngine = _randEngine;
-    mOutputs.resize(_outputCount);
-    mHiddenLayers.reserve(_hiddenLayerCount * _hiddenLayerCount);
-    for (int j = 0; j < _hiddenLayerCount; j++) {
-        std::vector<neuron> layer(_hiddenNodeCount);
-        for (int i = 0; i < _hiddenNodeCount; i++) {
-            layer[i] = neuron(0.0f, fast_sigmoid(mRandEngine->getFloat()));
+void neuralNet::start(int _iterations) {
+    OutputDebugStringA("---Start---\n");
+
+    //each species plays game, compare fitness, take top 2 in each population
+    //randomly adjust their values and create a new top 10
+    for (int i = 0; i < _iterations; i++) {
+        for (population& pop : mPopulations) {
+            std::pair<int, int> firstBest(-1, -1); //index, value
+            std::pair<int, int> secondBest(-1, -1);
+            for (int i = 0; i < pop.size(); i++)  {
+                playGame(pop[i]);
+                int fitness = pop[i].mFitness;
+                if (fitness > std::get<1>(secondBest)) {
+                    if (fitness > std::get<1>(firstBest)) {
+                        secondBest = firstBest;
+                        firstBest = std::pair<int, int>(i, fitness);
+                    }
+                    else {
+                        secondBest = std::pair<int, int>(i, fitness);
+                    }
+                }
+            }
         }
-        mHiddenLayers.push_back(layer);
     }
 
-    //todo: outputs
+}
+
+int neuralNet::playGame(species& s) {
+    mGameManager.initializeGame();
+    int timeout = 100;
+    int timeoutCounter = 0;
+    while (timeoutCounter < timeout) {
+        do { mGameManager.updateGameState(); } while (mGameManager.mIsBulletInFlight);
+        s.mInputValues = std::vector<float>(mGameManager.mGraphState.begin(), mGameManager.mGraphState.end());
+        
+        //currentAngle, Loaded bullet color
+        std::vector<float> extraInputs{mGameManager.mShooterAngle, (float)mGameManager.mLoadedBulletColor, (float)mGameManager.mUpcomingBulletColor};
+        s.mInputValues.insert(s.mInputValues.end(), extraInputs.begin(), extraInputs.end());
+        
+        keyList commands = runNetwork(s);
+        mGameManager.updateGameState(commands);
+        //if commands is empty, increase countTimeout
+    }
+    return(0);
+}
+
+keyList neuralNet::runNetwork(species& s) {
+    //inputs into 1st layer
+    //1st layer into n layer
+    //n layer into output
+    return(keyList());
+}
+
+species::species() {}
+species::species(int _outputCount, int _NodeCount, int _hiddenLayerCount, mtEngine* _randEngine) {
+    mRandEngine = _randEngine;
+
+    mOutputValues.resize(_outputCount);
+    mOutputWeights.resize(_outputCount);
+    for (std::vector<float> w : mOutputWeights) {
+        for (float f : w) {
+            f = fast_sigmoid(mRandEngine->getFloat());
+        }
+    }
+    
+    
+    mHiddenWeights.resize(_hiddenLayerCount);
+    for (std::vector<std::vector<float>>& index2 : mHiddenWeights) {
+        mHiddenValues.emplace_back(std::vector<float>(_NodeCount, 0.0f));
+        for (std::vector<float>& fuck : index2) {
+            fuck.resize(_NodeCount);
+            for (float& f : fuck) {
+                f = fast_sigmoid(mRandEngine->getFloat());
+            }
+        }
+    }
 }
 
 mtEngine::mtEngine() {
@@ -59,21 +123,20 @@ float mtEngine::getFloat() {
 gameManager::gameManager() {}
 gameManager::gameManager(game* _game) {
     mGame = _game;
-
+    initializeGame();
 }
 
-
-
-
+void gameManager::initializeGame() {
+    mGame->reset();
+    updateGameState();
+}
 
 int gameManager::getNodeCount() {
     return(mGame->mNUM_NODES);
 }
 
-void gameManager::updateGameState(bool _pressLeft, bool _pressRight, bool _pressSpace) {
-    if (_pressLeft || _pressRight || _pressSpace) {
-
-    }
+void gameManager::updateGameState(keyList& _input) {
+    mGame->runPhysicsFrame(_input);
     mGraphState = mGame->getGraphState();
     mIsBulletInFlight = mGame->getIsBulletInFlight();
     mShooterAngle = mGame->mShooter.getCurrentAngle();

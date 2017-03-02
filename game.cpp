@@ -37,7 +37,7 @@ void shooter::fireBullet(std::vector<bullet>& _activeBullets) {
     mLoadedBullet.mMeterPos = getOrigin();
     mLoadedBullet.mVector = sf::Vector2f(mBulletSpeed * sinf((M_PI * mCurrentAngle) / 180.0f), mBulletSpeed * -cosf((M_PI * mCurrentAngle) / 180.0f));
     //printf("CurrentAngle: %.02f  | x: %.02f  | y: %.02f \n", mCurrentAngle, mLoadedBullet.mVector.x, mLoadedBullet.mVector.y);
-    _activeBullets.push_back(mLoadedBullet);
+    _activeBullets.emplace_back(mLoadedBullet);
 
     updateMagazine();
 }
@@ -178,7 +178,8 @@ int game::translateBulletToClosestCeilingNode(bullet& b) {
 }
 
 
-void game::updateBulletGraphInteraction() {
+bool game::updateBulletGraphInteraction() {
+    bool didInteractionHappen = false;
     if (mActiveBullets.size() > 0) {
         std::vector<bullet> tmpActiveBulletsVec;
         for (bullet& b : mActiveBullets) {
@@ -187,6 +188,7 @@ void game::updateBulletGraphInteraction() {
                 int index = translateBulletToClosestCeilingNode(b);
                 mDestroyedNodes = mNodeGraph.checkForDestruction(index);
                 destroyBullet = true;
+                
             }
             else {
                 for (node* n : mFaceNodes) {
@@ -204,22 +206,26 @@ void game::updateBulletGraphInteraction() {
                 }
             }
             if (!destroyBullet) { tmpActiveBulletsVec.push_back(b); }
+            else { didInteractionHappen = true; }
         }
         mActiveBullets = tmpActiveBulletsVec;
     }
+    return(didInteractionHappen);
 }
 
 
-void game::runPhysicsFrame(std::vector<sf::Keyboard::Key>& _keys) {    
+bool game::runPhysicsFrame(std::vector<sf::Keyboard::Key>& _keys) {   //returns true if the graph changed
     mShooter.update(_keys, mActiveBullets);
-    updateBulletGraphInteraction();
-    updateDestroyedNodes();
-    if (checkForVictory()) { mStatus = STATUS_WON; }
-    else {
-        mNodeGraph.updateNodeAdjacencies();
-        updateFaceNodes();
+    bool update = updateBulletGraphInteraction();
+    if (update) {
+        updateDestroyedNodes();
+        if (checkForVictory()) { mStatus = STATUS_WON; }
+        else {
+            mNodeGraph.updateNodeAdjacencies();
+            updateFaceNodes();
+        }
     }
-    
+    return(update);
 }
 
 void game::updateDestroyedNodes() {

@@ -67,7 +67,7 @@ public:
     
 
     std::vector<bullet> mActiveBullets;
-    void runPhysicsFrame(std::vector<sf::Keyboard::Key>& _keys);
+    bool runPhysicsFrame(std::vector<sf::Keyboard::Key>& _keys);
     std::vector<int> getDestroyedNodeIndexes();
     void clearDestroyedNodes();
     void reset();
@@ -80,7 +80,7 @@ private:
     std::vector<int> mDestroyedNodes;
     std::vector<node*> mFaceNodes;
     void updateFaceNodes();
-    void updateBulletGraphInteraction();
+    bool updateBulletGraphInteraction();
     const sf::Vector2f mBoardMeterSize = sf::Vector2f(mBOARD_WIDTH + .5f, (float)mBOARD_HEIGHT);
     float getDistanceBetweenPoints(sf::Vector2f _a, sf::Vector2f _b);
     int translateBulletToClosestAdjacentNode(bullet& b, node& n);

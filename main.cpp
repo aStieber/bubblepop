@@ -9,12 +9,14 @@
 
 int main()
 {
-    bool nnMode = false;
+    bool nnMode = true;
+    srand(std::time(NULL));
     
     game theGame;
 
     if (nnMode) {
         neuralNet nn(&theGame);
+        nn.start(1000);
     }
     else {
         sf::RenderWindow window;

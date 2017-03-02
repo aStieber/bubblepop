@@ -178,5 +178,6 @@ short node::getColorIndex() {
             return(i);
         }
     }
+    return(-1);
 }
 
