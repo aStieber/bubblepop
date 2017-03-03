@@ -2,7 +2,7 @@
 #include <vector>
 #include <random>
 #include <chrono>
-#include <Windows.h>
+#include <iostream>
 #include "game.h"
 
 #define population std::vector<species>
@@ -67,9 +67,9 @@ public:
 
 private:
     
-    const int mPOPULATION_COUNT = 10;
-    const int mSPECIES_COUNT = 50;
-    const int mNUM_HIDDEN_LAYERS = 8;
+    const int mPOPULATION_COUNT = 4;
+    const int mSPECIES_COUNT = 20;
+    const int mNUM_HIDDEN_LAYERS = 3;
     const int mNUM_OUTPUTS = 3;
     int mNUM_INPUTS;
     std::vector<population> mPopulations;
@@ -80,5 +80,6 @@ private:
     void initializePopulations();
     int playGame(species& s);
     keyList runNetwork(species& s);
+    float processActivations(float _valueIndex, std::vector<float>& _weights, int size);
 
 };
